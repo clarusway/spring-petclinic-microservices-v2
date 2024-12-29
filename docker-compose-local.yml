@@ -1,6 +1,6 @@
 services:
   config-server:
-    image: springcommunity/spring-petclinic-config-server
+    image: petclinic-config-server:dev
     container_name: config-server
     deploy:
       resources:
@@ -11,11 +11,12 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 30s
     ports:
      - 8888:8888
 
   discovery-server:
-    image: springcommunity/spring-petclinic-discovery-server
+    image: petclinic-discovery-server:dev
     container_name: discovery-server
     deploy:
       resources:
@@ -26,6 +27,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+      start_period: 30s
     depends_on:
       config-server:
         condition: service_healthy
@@ -33,8 +35,9 @@ services:
      - 8761:8761
 
   customers-service:
-    image: springcommunity/spring-petclinic-customers-service
+    image: petclinic-customers-service:dev
     container_name: customers-service
+    restart: on-failure:3
     deploy:
       resources:
         limits:
@@ -48,8 +51,9 @@ services:
     - 8081:8081
 
   visits-service:
-    image: springcommunity/spring-petclinic-visits-service
+    image: petclinic-visits-service:dev
     container_name: visits-service
+    restart: on-failure:3
     deploy:
       resources:
         limits:
@@ -63,8 +67,9 @@ services:
      - 8082:8082
 
   vets-service:
-    image: springcommunity/spring-petclinic-vets-service
+    image: petclinic-vets-service:dev
     container_name: vets-service
+    restart: on-failure:3
     deploy:
       resources:
         limits:
@@ -77,29 +82,8 @@ services:
     ports:
      - 8083:8083
 
-
-  # genai-service:
-  #   image: springcommunity/spring-petclinic-genai-service
-  #   container_name: genai-service
-  #   environment:
-  #     - OPENAI_API_KEY=${OPENAI_API_KEY}
-  #     - AZURE_OPENAI_KEY=${AZURE_OPENAI_KEY}
-  #     - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 512M
-  #   depends_on:
-  #     config-server:
-  #       condition: service_healthy
-  #     discovery-server:
-  #       condition: service_healthy
-  #   ports:
-  #    - 8084:8084
-
-
   api-gateway:
-    image: springcommunity/spring-petclinic-api-gateway
+    image: petclinic-api-gateway:dev
     container_name: api-gateway
     deploy:
       resources:
@@ -121,13 +105,12 @@ services:
         limits:
           memory: 512M
     environment:
-    # Waiting for https://github.com/openzipkin/zipkin/issues/3786
-    - JAVA_OPTS=-XX:UseSVE=0
+    - JAVA_OPTS=-XX:+UnlockExperimentalVMOptions -Djava.security.egd=file:/dev/./urandom
     ports:
      - 9411:9411
 
   admin-server:
-    image: springcommunity/spring-petclinic-admin-server
+    image: petclinic-admin-server:dev
     container_name: admin-server
     deploy:
       resources:
@@ -144,17 +127,17 @@ services:
   ## Grafana / Prometheus
 
   grafana-server:
-    build: ./docker/grafana
+    image: petclinic-grafana-server:dev
     container_name: grafana-server
     deploy:
       resources:
         limits:
           memory: 256M
     ports:
-    - 3030:3030
+    - 3000:3000
 
   prometheus-server:
-    build: ./docker/prometheus
+    image: petclinic-prometheus-server:dev
     container_name: prometheus-server
     deploy:
       resources:
@@ -162,3 +145,15 @@ services:
           memory: 256M
     ports:
     - 9091:9090
+
+  ## Mysql
+
+  mysql-server:
+    image: mysql:5.7.8
+    container_name: mysql-server
+    environment: 
+      MYSQL_ROOT_PASSWORD: petclinic
+      MYSQL_DATABASE: petclinic
+    mem_limit: 256M
+    ports:
+    - 3306:3306

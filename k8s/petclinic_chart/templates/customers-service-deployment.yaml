@@ -25,6 +25,9 @@ spec:
       containers:
         - image: '{{ .Values.IMAGE_TAG_CUSTOMERS_SERVICE }}'
           name: customers-service
+          env:
+            - name: CONFIG_SERVER_URL
+              value: http://config-server.petclinic-dev.svc.cluster.local:8888/
           ports:
             - containerPort: 8081
               protocol: TCP

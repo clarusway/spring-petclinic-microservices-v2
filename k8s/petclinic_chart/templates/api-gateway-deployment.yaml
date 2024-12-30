@@ -33,6 +33,9 @@ spec:
       containers:
         - image: '{{ .Values.IMAGE_TAG_API_GATEWAY }}'
           name: api-gateway
+          env:
+            - name: CONFIG_SERVER_URL
+              value: http://config-server.petclinic-dev.svc.cluster.local:8888/
           ports:
             - containerPort: 8080
               protocol: TCP

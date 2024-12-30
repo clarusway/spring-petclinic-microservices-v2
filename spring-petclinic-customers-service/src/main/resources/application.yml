@@ -10,4 +10,4 @@ spring:
   config:
     activate:
       on-profile: docker
-    import: configserver:http://config-server:8888
+    import: configserver:http://config-server.petclinic-dev.svc.cluster.local:8888/

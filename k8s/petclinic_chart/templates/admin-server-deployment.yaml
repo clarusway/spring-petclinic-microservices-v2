@@ -24,6 +24,9 @@ spec:
     spec:
       containers:
         - image: '{{ .Values.IMAGE_TAG_ADMIN_SERVER }}'
+          env:
+            - name: CONFIG_SERVER_URL
+              value: http://config-server.petclinic-dev.svc.cluster.local:8888/
           name: admin-server
           ports:
             - containerPort: 9090
